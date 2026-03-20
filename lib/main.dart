@@ -102,7 +102,7 @@ class _MainScreenState extends State<MainScreen>
                 Icon(Icons.library_music, size: 80, color: Colors.green[300]),
                 SizedBox(height: 16),
                 Text(
-                  'Library Coming Soon',
+                  'Library Coming Soon...',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
