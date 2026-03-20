@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen>
         // Featured Playlists
         if (featuredPlaylists.isNotEmpty)
           HomeSection(
-            title: 'Featured Playlists',
+            title: '🎶 Featured Playlists',
             subtitle: 'Curated just for you',
             items:
                 featuredPlaylists
