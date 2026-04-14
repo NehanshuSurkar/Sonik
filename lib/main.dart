@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:rythmx/Models/music_player.dart';
@@ -119,25 +121,470 @@ class _MainScreenState extends State<MainScreen>
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.green[400]!, Colors.teal[400]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+
+      bottomNavigationBar: NeumorphicNavBar(tabController: _tabController),
+      // bottomNavigationBar: AnimatedBottomNavBar(tabController: _tabController),
+      // bottomNavigationBar: Container(
+      //   decoration: BoxDecoration(
+      //     gradient: LinearGradient(
+      //       colors: [Colors.green[400]!, Colors.teal[400]!],
+      //       begin: Alignment.topLeft,
+      //       end: Alignment.bottomRight,
+      //     ),
+      //   ),
+      //   child: TabBar(
+      //     controller: _tabController,
+      //     indicatorColor: Colors.white,
+      //     indicatorWeight: 3,
+      //     tabs: const [
+      //       Tab(icon: Icon(Icons.home), text: 'Home'),
+      //       Tab(icon: Icon(Icons.search), text: 'Search'),
+      //       Tab(icon: Icon(Icons.library_music), text: 'Library'),
+      //     ],
+      //     labelColor: Colors.white,
+      //     unselectedLabelColor: Colors.white70,
+      //   ),
+      // ),
+    );
+  }
+}
+
+class NeumorphicNavBar extends StatefulWidget {
+  final TabController tabController;
+
+  const NeumorphicNavBar({required this.tabController});
+
+  @override
+  State<NeumorphicNavBar> createState() => _NeumorphicNavBarState();
+}
+
+class _NeumorphicNavBarState extends State<NeumorphicNavBar>
+    with TickerProviderStateMixin {
+  late List<AnimationController> _animationControllers;
+  late List<Animation<double>> _scaleAnimations;
+  late List<Animation<double>> _opacityAnimations;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationControllers = List.generate(3, (index) {
+      return AnimationController(
+        duration: const Duration(milliseconds: 300),
+        vsync: this,
+      );
+    });
+
+    _scaleAnimations = List.generate(3, (index) {
+      return Tween<double>(begin: 1.0, end: 1.15).animate(
+        CurvedAnimation(
+          parent: _animationControllers[index],
+          curve: Curves.easeOutBack,
+        ),
+      );
+    });
+
+    _opacityAnimations = List.generate(3, (index) {
+      return Tween<double>(begin: 1.0, end: 0.3).animate(
+        CurvedAnimation(
+          parent: _animationControllers[index],
+          curve: Curves.easeInOut,
+        ),
+      );
+    });
+
+    widget.tabController.addListener(_handleTabChange);
+  }
+
+  void _handleTabChange() {
+    if (mounted) {
+      setState(() {});
+      // Animate the newly selected tab
+      final selectedIndex = widget.tabController.index;
+      _animationControllers[selectedIndex].forward();
+
+      // Reset animation after completion
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted && widget.tabController.index == selectedIndex) {
+          _animationControllers[selectedIndex].reset();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.tabController.removeListener(_handleTabChange);
+    for (var controller in _animationControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      height: 70,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.green[400]!, Colors.teal[400]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(35),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(35),
+        child: Material(
+          color: Colors.transparent,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(3, (index) {
+              final isSelected = widget.tabController.index == index;
+              return _buildNeumorphicTab(
+                index: index,
+                icon:
+                    index == 0
+                        ? Icons.home
+                        : index == 1
+                        ? Icons.search
+                        : Icons.library_music,
+                label:
+                    index == 0
+                        ? 'Home'
+                        : index == 1
+                        ? 'Search'
+                        : 'Library',
+                isSelected: isSelected,
+                onTap: () => widget.tabController.animateTo(index),
+              );
+            }),
           ),
         ),
-        child: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          indicatorWeight: 3,
-          tabs: const [
-            Tab(icon: Icon(Icons.home), text: 'Home'),
-            Tab(icon: Icon(Icons.search), text: 'Search'),
-            Tab(icon: Icon(Icons.library_music), text: 'Library'),
+      ),
+    );
+  }
+
+  Widget _buildNeumorphicTab({
+    required int index,
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          _animationControllers[index].forward();
+          onTap();
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (mounted && widget.tabController.index == index) {
+              _animationControllers[index].reset();
+            }
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color:
+                isSelected
+                    ? Colors.white.withOpacity(0.95)
+                    : Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(25),
+            boxShadow:
+                isSelected
+                    ? [
+                      BoxShadow(
+                        color: Colors.green[800]!.withOpacity(0.15),
+                        blurRadius: 6,
+                        offset: const Offset(-2, -2),
+                      ),
+                      BoxShadow(
+                        color: Colors.teal[800]!.withOpacity(0.15),
+                        blurRadius: 6,
+                        offset: const Offset(2, 2),
+                      ),
+                    ]
+                    : null,
+            border:
+                isSelected
+                    ? Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 0.5,
+                    )
+                    : null,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ScaleTransition(
+                scale: _scaleAnimations[index],
+                child: Icon(
+                  icon,
+                  color: isSelected ? Colors.green[600] : Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(height: 4),
+              FadeTransition(
+                opacity: _opacityAnimations[index],
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.green[600] : Colors.white70,
+                    fontSize: 11,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+// class NeumorphicNavBar extends StatelessWidget {
+//   final TabController tabController;
+
+//   const NeumorphicNavBar({required this.tabController});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       margin: const EdgeInsets.all(16),
+//       height: 70,
+//       decoration: BoxDecoration(
+//         gradient: LinearGradient(
+//           colors: [Colors.green[400]!, Colors.teal[400]!],
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//         ),
+//         borderRadius: BorderRadius.circular(35),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.green[300]!.withOpacity(0.6),
+//             blurRadius: 15,
+//             offset: const Offset(-5, -5),
+//           ),
+//           BoxShadow(
+//             color: Colors.green[300]!.withOpacity(0.6),
+//             blurRadius: 15,
+//             offset: const Offset(5, 5),
+//           ),
+//         ],
+//       ),
+//       child: ClipRRect(
+//         borderRadius: BorderRadius.circular(35),
+//         child: Row(
+//           mainAxisAlignment: MainAxisAlignment.spaceAround,
+//           children: [
+//             _buildNeumorphicTab(
+//               icon: Icons.home,
+//               label: 'Home',
+//               isSelected: tabController.index == 0,
+//               onTap: () => tabController.animateTo(0),
+//             ),
+//             _buildNeumorphicTab(
+//               icon: Icons.search,
+//               label: 'Search',
+//               isSelected: tabController.index == 1,
+//               onTap: () => tabController.animateTo(1),
+//             ),
+//             _buildNeumorphicTab(
+//               icon: Icons.library_music,
+//               label: 'Library',
+//               isSelected: tabController.index == 2,
+//               onTap: () => tabController.animateTo(2),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildNeumorphicTab({
+//     required IconData icon,
+//     required String label,
+//     required bool isSelected,
+//     required VoidCallback onTap,
+//   }) {
+//     return Expanded(
+//       child: GestureDetector(
+//         onTap: onTap,
+//         child: AnimatedContainer(
+//           duration: const Duration(milliseconds: 200),
+//           margin: const EdgeInsets.all(8),
+//           decoration: BoxDecoration(
+//             color: isSelected ? Colors.grey[100] : Colors.transparent,
+//             borderRadius: BorderRadius.circular(25),
+//             boxShadow:
+//                 isSelected
+//                     ? [
+//                       BoxShadow(
+//                         color: Colors.green[300]!,
+//                         blurRadius: 8,
+//                         offset: const Offset(-3, -3),
+//                       ),
+//                       BoxShadow(
+//                         color: Colors.green[300]!,
+//                         blurRadius: 8,
+//                         offset: const Offset(3, 3),
+//                       ),
+//                     ]
+//                     : null,
+//           ),
+//           child: Column(
+//             mainAxisAlignment: MainAxisAlignment.center,
+//             children: [
+//               Icon(
+//                 icon,
+//                 color: isSelected ? Colors.green[600] : Colors.white,
+//                 size: 24,
+//               ),
+//               const SizedBox(height: 4),
+//               Text(
+//                 label,
+//                 style: TextStyle(
+//                   color: isSelected ? Colors.green[600] : Colors.white,
+//                   fontSize: 10,
+//                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+class AnimatedBottomNavBar extends StatefulWidget {
+  final TabController tabController;
+
+  const AnimatedBottomNavBar({required this.tabController});
+
+  @override
+  State<AnimatedBottomNavBar> createState() => _AnimatedBottomNavBarState();
+}
+
+class _AnimatedBottomNavBarState extends State<AnimatedBottomNavBar> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.green[400]!, Colors.teal[400]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(25),
+            topRight: Radius.circular(25),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(3, (index) {
+                  return _buildAnimatedTab(
+                    index: index,
+                    icon:
+                        index == 0
+                            ? Icons.home
+                            : index == 1
+                            ? Icons.search
+                            : Icons.library_music,
+                    label:
+                        index == 0
+                            ? 'Home'
+                            : index == 1
+                            ? 'Search'
+                            : 'Library',
+                    isSelected: widget.tabController.index == index,
+                  );
+                }),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedTab({
+    required int index,
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        widget.tabController.animateTo(index);
+        setState(() {});
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color:
+              isSelected ? Colors.white.withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TweenAnimationBuilder(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutBack,
+              tween: Tween<double>(begin: 1.0, end: isSelected ? 1.1 : 1.0),
+              builder: (context, double scale, child) {
+                return Transform.scale(
+                  scale: scale,
+                  child: Icon(
+                    icon,
+                    color: isSelected ? Colors.white : Colors.white70,
+                    size: 24,
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 4),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.white70,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                fontSize: 12,
+                letterSpacing: 0.3,
+              ),
+              child: Text(label),
+            ),
           ],
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
         ),
       ),
     );
