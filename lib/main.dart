@@ -85,6 +85,7 @@ class _MainScreenState extends State<MainScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -223,7 +224,7 @@ class _NeumorphicNavBarState extends State<NeumorphicNavBar>
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.fromLTRB(16, 2, 16, 4),
       height: 70,
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -298,7 +299,8 @@ class _NeumorphicNavBarState extends State<NeumorphicNavBar>
             color:
                 isSelected
                     ? Colors.white.withOpacity(0.95)
-                    : Colors.white.withOpacity(0.15),
+                    : Colors
+                        .transparent, // Changed: removed bubble effect when not selected
             borderRadius: BorderRadius.circular(25),
             boxShadow:
                 isSelected
@@ -330,7 +332,11 @@ class _NeumorphicNavBarState extends State<NeumorphicNavBar>
                 scale: _scaleAnimations[index],
                 child: Icon(
                   icon,
-                  color: isSelected ? Colors.green[600] : Colors.white,
+                  color:
+                      isSelected
+                          ? Colors.green[600]
+                          : Colors
+                              .white, // Changed: constant white color for unselected text
                   size: 24,
                 ),
               ),
@@ -340,8 +346,12 @@ class _NeumorphicNavBarState extends State<NeumorphicNavBar>
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: isSelected ? Colors.green[600] : Colors.white70,
-                    fontSize: 11,
+                    color:
+                        isSelected
+                            ? Colors.green[600]
+                            : Colors
+                                .white, // Changed: constant white color for unselected text
+                    fontSize: 12,
                     fontWeight:
                         isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
