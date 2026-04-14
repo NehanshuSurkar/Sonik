@@ -1640,12 +1640,15 @@ class SearchScreenState extends State<SearchScreen>
                           Icon(
                             Icons.music_note,
                             size: 80,
-                            color: Colors.grey[300],
+                            color: Colors.green[300],
                           ),
                           SizedBox(height: 16),
                           Text(
                             "Search for songs",
-                            style: TextStyle(color: Colors.grey, fontSize: 20),
+                            style: TextStyle(
+                              color: Colors.green[700],
+                              fontSize: 20,
+                            ),
                           ),
                         ],
                       ),

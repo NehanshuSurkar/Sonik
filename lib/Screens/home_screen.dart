@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen>
       _sections = [
         // Greeting Section (Special)
         HomeSection(
-          title: "Let's get Sonik",
+          title: "Let's get Sonik ✨",
           subtitle: 'Discover your favorite songs',
           items: [],
           type: SectionType.trending,
@@ -99,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen>
         // New Releases
         if (newReleases.isNotEmpty)
           HomeSection(
-            title: 'New Releases',
+            title: '🎸 New Releases',
             subtitle: 'Fresh tracks added this week',
             items:
                 newReleases
