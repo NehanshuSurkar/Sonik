@@ -30,7 +30,7 @@ class HomeItem {
   final String subtitle;
   final String imageUrl;
   final ItemType type;
-  final dynamic data; // Can be Song, Artist, Playlist, etc.
+  final dynamic data;
 
   HomeItem({
     required this.id,
